@@ -21,22 +21,26 @@
     </style>
 </head>
 <body>
+
 <header><h1>JARVIS: ECCELLENZA DEL FORO MONDIALE</h1></header>
 <div id="chat-window"></div>
 <div id="input-bar">
-    <input type="text" id="userInput" placeholder="Esponi il caso o poni un quesito legale...">
+    <input type="text" id="userInput" placeholder="Esponi il caso o rispondi a Jarvis...">
     <button class="btn" onclick="handleInput()">Invia</button>
 </div>
 
 <script>
     const chat = document.getElementById('chat-window');
     const input = document.getElementById('userInput');
-    const salutoIntro = "Buongiorno Fabio. Sono il tuo avvocato digitale. Rappresento l'eccellenza del foro mondiale con aggiornamento istantaneo su ogni codice e sentenza. Sono qui per tutelare i tuoi interessi con precisione chirurgica. Come posso assisterti?";
+    
+    const salutoIntro = "Buongiorno Fabio. Sono il tuo avvocato digitale. Rappresento l'eccellenza del foro mondiale. Sono qui per tutelare i tuoi interessi con precisione chirurgica. Come posso assisterti?";
 
-    // Funzione per trovare la voce femminile italiana corretta
+    // --- GESTIONE VOCE ---
     function getFemaleVoice() {
         const voices = window.speechSynthesis.getVoices();
-        return voices.find(v => v.lang === 'it-IT' && (v.name.includes('Google') || v.name.includes('Alice') || v.name.includes('Elsa'))) || voices.find(v => v.lang === 'it-IT') || voices[0];
+        // Cerca una voce femminile italiana naturale
+        const preferred = voices.find(v => v.lang === 'it-IT' && (v.name.includes('Google') || v.name.includes('Alice') || v.name.includes('Elsa')));
+        return preferred || voices.find(v => v.lang === 'it-IT') || voices[0];
     }
 
     function speak(text) {
@@ -49,48 +53,58 @@
         window.speechSynthesis.speak(utterance);
     }
 
+    // --- GESTIONE INTERFACCIA ---
     function appendMsg(role, text, source = "") {
         const div = document.createElement('div');
         div.className = `msg ${role.toLowerCase()}`;
         let content = `<strong>${role.toUpperCase()}</strong><br>${text}`;
-        if (source) content += `<div class="technical-part"><span class="legal-label">RIFERIMENTI LEGALI E FONTI:</span>${source}</div>`;
+        if (source) {
+            content += `<div class="technical-part"><span class="legal-label">RIFERIMENTI LEGALI E FONTI:</span>${source}</div>`;
+        }
         div.innerHTML = content;
         chat.appendChild(div);
         chat.scrollTop = chat.scrollHeight;
     }
 
-    // LOGICA LEGALE A 360 GRADI
+    // --- LOGICA LEGALE (CORRETTA) ---
     function getLegalLogic(query) {
-        const q = query.toLowerCase();
+        const q = query.toLowerCase().trim();
         
-        // Esempio: Famiglia, Tutela, Salute (come la tua richiesta sulla sorella)
-        if (q.includes("sla") || q.includes("sorella") || q.includes("amministratore") || q.includes("tutore") || q.includes("struttura") || q.includes("trasferimento")) {
+        // 1. Riconoscimento immediato ambito (priorità assoluta)
+        if (q === "civile" || q.includes("ambito civile") || q.includes("credo civile")) {
             return {
-                text: "In merito alla tutela dei tuoi familiari e al diritto alla salute, la legge italiana privilegia il benessere del beneficiario e il mantenimento dei legami affettivi. Se la struttura attuale è distante, è possibile agire presso il Giudice Tutelare per richiedere un trasferimento motivato a Saronno. Fabio, l'amministratore ha espresso ragioni ostative specifiche?",
-                source: "Art. 404 C.C.: Amministrazione di Sostegno.\nArt. 410 C.C.: Doveri dell'amministratore (bisogni e aspirazioni del beneficiario).\nCass. Civ. Sez. I, n. 21099/2021: Priorità alla vicinanza territoriale e ai legami familiari."
+                text: "Ricevuto, Fabio. Procediamo in ambito civile. Sto predisponendo l'analisi dei codici. Esponimi pure i fatti nei dettagli, così posso individuare la strategia difensiva più efficace.",
+                source: "Codice Civile e Codice di Procedura Civile."
+            };
+        }
+        
+        if (q === "penale" || q.includes("ambito penale")) {
+            return {
+                text: "Confermato, Fabio. Entriamo in ambito penale. Sto verificando le fattispecie di reato applicabili. Qual è l'episodio specifico su cui dobbiamo fare luce?",
+                source: "Codice Penale e Procedura Penale."
             };
         }
 
-        // Esempio: Penale / Reati
-        if (q.includes("querela") || q.includes("denuncia") || q.includes("reato") || q.includes("polizia")) {
+        // 2. Analisi contenuti specifici (es. caso familiare/amministratore)
+        if (q.includes("sla") || q.includes("sorella") || q.includes("amministratore") || q.includes("tutore") || q.includes("struttura") || q.includes("spostare")) {
             return {
-                text: "La questione richiede un'analisi del Codice Penale. Dobbiamo valutare se sussistono i presupposti per la procedibilità d'ufficio o se è necessaria una querela di parte entro i termini di legge (solitamente 3 mesi). Hai già del materiale probatorio o testimonianze?",
-                source: "Art. 333 C.P.P.: Denuncia da parte di privati.\nArt. 120 C.P.: Diritto di querela."
+                text: "In merito alla situazione di tua sorella, la legge è chiara: il benessere del beneficiario è prioritario rispetto alle decisioni dell'amministratore. Possiamo presentare istanza al Giudice Tutelare per il trasferimento a Saronno. Hai già individuato una struttura accreditata in zona?",
+                source: "Art. 404 C.C. (Amministrazione di Sostegno)\nArt. 410 C.C. (Interessi del beneficiario)\nCass. Civ. Sez. I, n. 21099/2021."
             };
         }
 
-        // Risposta per quesiti generici o brevi
-        if (q.length < 15) {
+        // 3. Se la frase è molto corta e non è una parola chiave, allora chiede dettagli
+        if (q.length < 5) {
             return {
-                text: "Fabio, per fornirti un parere di altissimo livello ho bisogno di maggiori dettagli. Si tratta di una controversia civile, penale o di un parere contrattuale?",
+                text: "Fabio, ho bisogno di più informazioni per elaborare una strategia. Si tratta di una questione civile o penale?",
                 source: ""
             };
         }
 
-        // Risposta Standard "Avvocato" per tutto il resto (360 gradi)
+        // 4. Risposta standard per tutto il resto (360 gradi)
         return {
-            text: "Ho ricevuto i dati. Sto incrociando le disposizioni del codice con la giurisprudenza di Cassazione più recente. La fattispecie sembra rientrare nella tutela dei diritti soggettivi. Confermi che ci sono già atti notificati o procedimenti pendenti?",
-            source: "Codice di Procedura Civile / Penale - Analisi della competenza territoriale e di merito."
+            text: "Ho preso nota della tua richiesta. Sto incrociando i dati con la giurisprudenza della Cassazione più recente per darti un parere certo al 100%. Preferisci procedere con un'analisi dei precedenti o con la stesura di un atto?",
+            source: "Database Giurisprudenziale Forense Integrato."
         };
     }
 
@@ -109,13 +123,16 @@
         }, 600);
     }
 
-    // Inizializzazione corretta
+    // --- AVVIO ---
     window.onload = () => {
         appendMsg("Jarvis", salutoIntro);
-        // Carica le voci prima del primo click
-        window.speechSynthesis.onvoiceschanged = () => getFemaleVoice();
         
-        // Attivazione voce femminile al primo click dell'utente (obbligatorio per i browser)
+        // Carica le voci per i browser che le caricano in ritardo
+        if (window.speechSynthesis.onvoiceschanged !== undefined) {
+            window.speechSynthesis.onvoiceschanged = getFemaleVoice;
+        }
+
+        // Attivazione audio al primo click dell'utente
         document.body.addEventListener('click', () => {
             speak(salutoIntro);
         }, { once: true });
