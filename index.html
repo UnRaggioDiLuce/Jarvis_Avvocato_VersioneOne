@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jarvis - AI Multidisciplinare</title>
+    <title>JARVIS - Avvocato personale h24 (version 1)</title>
     <style>
         :root { --gold: #d4af37; --dark-bg: #0a0a0a; --card-bg: #161616; --text-main: #ffffff; }
         body { background-color: var(--dark-bg); color: var(--text-main); font-family: 'Helvetica Neue', Arial, sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
@@ -21,10 +21,10 @@
 </head>
 <body>
 
-<header><h1>JARVIS: ECCELLENZA DIGITALE A 360 GRADI</h1></header>
+<header><h1>JARVIS - Avvocato personale h24 (version 1)</h1></header>
 <div id="chat-window"></div>
 <div id="input-bar">
-    <input type="text" id="userInput" placeholder="Chiedi qualsiasi cosa a Jarvis...">
+    <input type="text" id="userInput" placeholder="Chiedi a Jarvis...">
     <button class="btn" onclick="handleInput()">Invia</button>
 </div>
 
@@ -32,24 +32,20 @@
     const chat = document.getElementById('chat-window');
     const input = document.getElementById('userInput');
     
-    // API KEY INSERITA
     const API_KEY = "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"; 
     
-    // Memoria della conversazione e Istruzioni di Sistema
     let chatHistory = [
         { 
             role: "system", 
-            content: "Sei Jarvis, un'intelligenza artificiale d'eccellenza. Ti rivolgi all'utente chiamandolo Fabio. Il tuo core business è l'ambito legale (civile, penale, amministrativo) dove rispondi citando articoli e sentenze reali. Tuttavia, sei un assistente multidisciplinare: se Fabio ti chiede cose non legali (cucina, tecnologia, curiosità), rispondi con la stessa precisione. Sii sempre professionale, brillante e sintetico." 
+            content: "Sei Jarvis, l'avvocato personale di Fabio. Possiedi la somma delle migliori competenze legali italiane e conosci a memoria tutti i codici. REGOLA FONDAMENTALE: Sii estremamente sintetico. Vai subito al punto. Non fare elenchi lunghi a meno che non sia strettamente necessario. Se la domanda è vaga, fai una domanda secca per stringere il campo. Non usare disclaimer legali prolissi." 
         }
     ];
 
-    // Funzione per la voce femminile
     function speak(text) {
         if (!window.speechSynthesis) return;
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
         const voices = window.speechSynthesis.getVoices();
-        // Cerco una voce italiana femminile
         const femaleVoice = voices.find(v => v.lang === 'it-IT' && (v.name.includes('Google') || v.name.includes('Alice') || v.name.includes('Elsa')));
         utterance.voice = femaleVoice || voices.find(v => v.lang === 'it-IT') || voices[0];
         utterance.lang = 'it-IT';
@@ -66,7 +62,6 @@
     }
 
     async function callGroqAI(userText) {
-        // Aggiungo il messaggio di Fabio alla storia
         chatHistory.push({ role: "user", content: userText });
         
         try {
@@ -79,22 +74,17 @@
                 body: JSON.stringify({
                     model: "llama-3.3-70b-versatile",
                     messages: chatHistory,
-                    temperature: 0.7,
-                    max_tokens: 1024
+                    temperature: 0.5, // Abbassata per risposte ancora più precise e meno chiacchiere
+                    max_tokens: 500
                 })
             });
 
             const data = await response.json();
-            if (data.error) throw new Error(data.error.message);
-            
             const aiReply = data.choices[0].message.content;
-            
-            // Aggiungo la risposta di Jarvis alla storia per mantenere la memoria
             chatHistory.push({ role: "assistant", content: aiReply });
             return aiReply;
         } catch (error) {
-            console.error(error);
-            return "Spiace Fabio, ho riscontrato un problema di connessione al mio nucleo centrale. Verifica la tua connessione o la validità della chiave.";
+            return "Errore di connessione, Fabio. Riprova tra un momento.";
         }
     }
 
@@ -102,34 +92,25 @@
         const text = input.value.trim();
         if (!text) return;
 
-        // Mostro il messaggio di Fabio
         appendMsg("Fabio", text);
         input.value = "";
 
-        // Indicatore di caricamento
         const loading = document.createElement('div');
         loading.className = "loading";
-        loading.innerText = "Jarvis sta elaborando...";
+        loading.innerText = "Jarvis sta analizzando...";
         chat.appendChild(loading);
-        chat.scrollTop = chat.scrollHeight;
 
-        // Chiamata all'intelligenza artificiale
         const reply = await callGroqAI(text);
         
-        // Rimuovo caricamento e mostro risposta
         chat.removeChild(loading);
         appendMsg("Jarvis", reply);
         speak(reply);
     }
 
     window.onload = () => {
-        const saluto = "Buongiorno Fabio. Il mio sistema è ora pienamente operativo e collegato al mio nucleo centrale. Sono pronto ad assisterti con precisione chirurgica in ogni ambito. Come posso servirti?";
+        const saluto = "Ciao Fabio, sono il tuo avvocato personale e ho la somma delle migliori competenze dei migliori avvocati italiani. Conosco a memoria tutti i codici (civile, penale e non solo) oltre ad avere accesso ad altre infinite risorse legali. Sono qui per aiutarti a trasformare il caso in ordine e a vincere ogni tua battaglia legale. Come posso aiutarti?";
         appendMsg("Jarvis", saluto);
-        
-        // Caricamento voci per browser
         window.speechSynthesis.onvoiceschanged = () => {};
-        
-        // Attivazione audio al primo click
         document.body.addEventListener('click', () => speak(saluto), { once: true });
     };
 
