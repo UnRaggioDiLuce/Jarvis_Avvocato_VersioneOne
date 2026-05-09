@@ -3,46 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JARVIS - AVVOCATO DI FABIO VERSIONE 1</title>
+    <title>JARVIS - IL TUO AVVOCATO DI FIDUCIA - VERSIONE 1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; overflow: hidden; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; overflow: hidden; }
         .chat-container { height: calc(100vh - 160px); }
         .sidebar { transition: transform 0.3s ease-in-out; z-index: 50; }
         .sidebar.closed { transform: translateX(-100%); }
-        .markdown-content p { margin-bottom: 1rem; }
-        /* Scrollbar pulita */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
 <body class="flex flex-col h-screen">
 
-    <div id="sidebar" class="sidebar closed fixed inset-y-0 left-0 w-64 bg-slate-900 text-white p-4 shadow-2xl">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="font-bold uppercase text-sm tracking-widest text-slate-400">Cronologia Chat</h2>
-            <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white">✕</button>
-        </div>
-        <div id="historyList" class="space-y-2 overflow-y-auto h-[80%]">
-            </div>
-        <button onclick="newChat()" class="absolute bottom-4 left-4 right-4 bg-slate-700 p-2 rounded text-xs font-bold hover:bg-slate-600">NUOVA CHAT</button>
+    <!-- OVERLAY INIZIALE PER SBLOCCARE AUDIO -->
+    <div id="overlay" class="fixed inset-0 bg-slate-900 z-[100] flex flex-col items-center justify-center p-6 text-center">
+        <h2 class="text-white text-2xl font-bold mb-4 uppercase">JARVIS - VERSIONE 1</h2>
+        <p class="text-slate-400 mb-8">Benvenuto Fabio. Clicca il tasto sotto per attivare il tuo assistente legale.</p>
+        <button onclick="startApp()" class="bg-white text-slate-900 px-8 py-4 rounded-full font-bold text-lg shadow-xl hover:scale-105 transition">ATTIVA JARVIS</button>
     </div>
 
+    <!-- SIDEBAR STORICO -->
+    <div id="sidebar" class="sidebar closed fixed inset-y-0 left-0 w-64 bg-slate-900 text-white p-4 shadow-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="font-bold uppercase text-xs tracking-widest text-slate-500">Cronologia</h2>
+            <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white text-xl">✕</button>
+        </div>
+        <div id="historyList" class="space-y-2 overflow-y-auto h-[80%]"></div>
+        <button onclick="newChat()" class="absolute bottom-4 left-4 right-4 bg-slate-800 p-3 rounded-xl text-xs font-bold hover:bg-slate-700">NUOVA CHAT</button>
+    </div>
+
+    <!-- HEADER -->
     <header class="bg-white border-b border-slate-200 p-4 flex justify-between items-center shadow-sm">
         <button onclick="toggleSidebar()" class="bg-slate-100 p-2 rounded-lg hover:bg-slate-200">📜</button>
-        <h1 class="text-lg font-bold text-slate-800 uppercase tracking-tighter text-center">Jarvis - Avvocato di Fabio v1</h1>
-        <div class="w-8"></div> </header>
+        <h1 class="text-sm md:text-lg font-bold text-slate-800 uppercase tracking-tight text-center">JARVIS - IL TUO AVVOCATO DI FIDUCIA - VERSIONE 1</h1>
+        <div class="w-8"></div>
+    </header>
 
-    <main id="chatBox" class="chat-container overflow-y-auto p-4 space-y-4">
-        </main>
+    <!-- AREA CHAT -->
+    <main id="chatBox" class="chat-container overflow-y-auto p-4 space-y-4 bg-[#f1f5f9]">
+        <!-- Messaggi -->
+    </main>
 
+    <!-- INPUT -->
     <footer class="bg-white border-t border-slate-200 p-4">
         <div class="max-w-4xl mx-auto flex gap-2">
-            <input type="text" id="userInput" placeholder="Descrivi il tuo problema legale..." 
-                   class="flex-1 p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-400 text-sm">
+            <input type="text" id="userInput" placeholder="Descrivi qui il tuo caso..." 
+                   class="flex-1 p-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-400 text-sm">
             <button id="micBtn" class="bg-slate-100 p-3 rounded-xl hover:bg-slate-200">🎤</button>
-            <button id="sendBtn" class="bg-slate-800 text-white px-5 py-3 rounded-xl font-bold text-sm">INVIA</button>
+            <button id="sendBtn" class="bg-slate-800 text-white px-6 py-3 rounded-xl font-bold text-sm">INVIA</button>
         </div>
     </footer>
 
@@ -54,18 +62,18 @@
         let chats = JSON.parse(localStorage.getItem('jarvis_chats') || '{}');
         let currentMessages = [];
 
-        // Inizializzazione
-        window.onload = () => {
+        function startApp() {
+            document.getElementById('overlay').style.display = 'none';
             renderHistory();
             const welcome = "Ciao Fabio, sono il tuo avvocato e ho istantaneamente accesso a tutti i temi legali e sempre aggiornati per offrirti il meglio degli avvocati di tutta Italia.";
             addMessage('Jarvis', welcome);
             speak(welcome);
-        };
+        }
 
         async function getAIResponse(prompt) {
             currentMessages.push({ role: "user", parts: [{ text: prompt }]});
             
-            const systemInstruction = "Sei l'avvocato di Fabio. DEVI: 1. Essere umano ed empatico nella prima frase. 2. Fornire dettagli tecnici con COPIA/INCOLLA di Codici (Civile/Penale) e fonti. 3. Dividere in sezioni 'CODICI' e 'ALTRO'. 4. Se fuori tema, rispondi come AI umana. 5. Chiedi dettagli se necessario. Sii sintetico e diretto.";
+            const systemInstruction = "Sei l'avvocato di Fabio. COMPORTAMENTO: 1. Inizia SEMPRE con una frase breve, empatica e umana. 2. Poi dai il dettaglio tecnico legale con COPIA E INCOLLA di Codici (Civile/Penale) e fonti certe. 3. Dividi la risposta in sezioni 'CODICI' e 'ALTRO'. 4. Se la domanda è generica (es. come puoi aiutarmi), rispondi come AI umana descrivendo i tuoi poteri legali. 5. Se mancano info per una risposta esatta, FAI DOMANDE tu a lui. Mantieni il contesto di tutta la chat.";
 
             try {
                 const response = await fetch(GEMINI_URL, {
@@ -76,27 +84,32 @@
                         system_instruction: { parts: [{ text: systemInstruction }] }
                     })
                 });
-                const data = await response.json();
-                const aiText = data.candidates[0].content.parts[0].text;
                 
+                const data = await response.json();
+                
+                if (data.error) {
+                    console.error(data.error);
+                    return "Errore tecnico delle API. Assicurati che la chiave sia attiva su Google AI Studio.";
+                }
+
+                const aiText = data.candidates[0].content.parts[0].text;
                 currentMessages.push({ role: "model", parts: [{ text: aiText }]});
                 saveChat();
                 return aiText;
             } catch (e) {
-                return "Errore di connessione. Verifica la tua chiave API.";
+                return "Errore di connessione al server legale.";
             }
         }
 
-        // Sintesi Vocale (Browser)
         function speak(text) {
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'it-IT';
-            utterance.rate = 0.9; // Leggermente più lento per essere più rassicurante
+            utterance.pitch = 1;
+            utterance.rate = 1;
             window.speechSynthesis.speak(utterance);
         }
 
-        // Riconoscimento Vocale
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (SpeechRecognition) {
             const recognition = new SpeechRecognition();
@@ -112,27 +125,27 @@
         async function handleSend() {
             const text = userInput.value.trim();
             if (!text) return;
-            
             addMessage('Tu', text);
             userInput.value = '';
-            
             const response = await getAIResponse(text);
             addMessage('Jarvis', response);
-            speak(response.split('\n')[0]); // Parla solo la prima parte empatica per brevità
+            // Parla solo la prima parte (prima del punto) per non essere troppo lungo a voce
+            const firstSentence = response.split(/[.!?]/)[0];
+            speak(firstSentence);
         }
 
         sendBtn.onclick = handleSend;
         userInput.onkeypress = (e) => { if(e.key === 'Enter') handleSend(); };
 
         function addMessage(sender, text) {
+            const chatBox = document.getElementById('chatBox');
             const div = document.createElement('div');
-            div.className = `max-w-[85%] p-4 rounded-2xl shadow-sm text-sm ${sender === 'Tu' ? 'bg-slate-800 text-white ml-auto' : 'bg-white text-slate-800 mr-auto border border-slate-200'}`;
-            div.innerHTML = `<p class="font-bold mb-1 text-[10px] uppercase opacity-50">${sender}</p><div class="markdown-content">${text.replace(/\n/g, '<br>')}</div>`;
+            div.className = `max-w-[90%] p-4 rounded-2xl text-sm shadow-sm ${sender === 'Tu' ? 'bg-slate-800 text-white ml-auto' : 'bg-white text-slate-800 border border-slate-200'}`;
+            div.innerHTML = `<p class="font-bold mb-1 text-[10px] uppercase opacity-40">${sender}</p><div class="leading-relaxed">${text.replace(/\n/g, '<br>')}</div>`;
             chatBox.appendChild(div);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // Gestione Storico
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('closed'); }
 
         function saveChat() {
@@ -146,8 +159,9 @@
             list.innerHTML = '';
             Object.keys(chats).reverse().forEach(id => {
                 const btn = document.createElement('button');
-                btn.className = "w-full text-left p-2 hover:bg-slate-800 rounded text-xs truncate border-b border-slate-800";
-                btn.innerText = chats[id].messages[1]?.parts[0].text || "Nuova conversazione";
+                btn.className = "w-full text-left p-3 hover:bg-slate-800 rounded-xl text-[11px] truncate border-b border-slate-800/50 text-slate-300";
+                const firstUserMsg = chats[id].messages.find(m => m.role === 'user');
+                btn.innerText = firstUserMsg ? firstUserMsg.parts[0].text : "Chat vuota";
                 btn.onclick = () => loadChat(id);
                 list.appendChild(btn);
             });
@@ -156,7 +170,7 @@
         function loadChat(id) {
             currentChatId = id;
             currentMessages = chats[id].messages;
-            chatBox.innerHTML = '';
+            document.getElementById('chatBox').innerHTML = '';
             currentMessages.forEach(m => addMessage(m.role === 'user' ? 'Tu' : 'Jarvis', m.parts[0].text));
             toggleSidebar();
         }
@@ -164,8 +178,8 @@
         function newChat() {
             currentChatId = Date.now();
             currentMessages = [];
-            chatBox.innerHTML = '';
-            addMessage('Jarvis', "Nuova sessione avviata. Come posso aiutarti Fabio?");
+            document.getElementById('chatBox').innerHTML = '';
+            addMessage('Jarvis', "Nuova sessione avviata. Sono pronto, Fabio.");
             toggleSidebar();
         }
     </script>
