@@ -2,176 +2,159 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JARVIS - IL TUO AVVOCATO DI FIDUCIA - VERSIONE 1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JARVIS - ECCELLENZA DEL FORO</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; overflow: hidden; }
-        .chat-container { height: calc(100vh - 160px); }
-        .sidebar { transition: transform 0.3s ease-in-out; z-index: 50; }
-        .sidebar.closed { transform: translateX(-100%); }
+        :root { --gold: #d4af37; --dark-bg: #0a0a0a; --card-bg: #161616; --text-main: #ffffff; }
+        body { background-color: var(--dark-bg); color: var(--text-main); font-family: 'Helvetica Neue', Arial, sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        header { width: 100%; padding: 15px; text-align: center; background: #000; border-bottom: 2px solid var(--gold); display: flex; justify-content: space-between; align-items: center; }
+        h1 { color: var(--gold); margin: 0; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; font-weight: bold; flex: 1; }
+        #chat-window { width: 100%; max-width: 800px; flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; margin: 0 auto; background: linear-gradient(to bottom, #0a0a0a, #1a1a1a); }
+        .msg { max-width: 85%; padding: 18px; border-radius: 15px; line-height: 1.6; font-size: 1rem; position: relative; }
+        .jarvis { background-color: var(--card-bg); align-self: flex-start; border-left: 4px solid var(--gold); color: #eee; }
+        .fabio { background-color: #1a2a3a; align-self: flex-end; border-right: 4px solid #3498db; }
+        .technical-part { background: rgba(212, 175, 55, 0.1); padding: 12px; border-radius: 10px; margin-top: 12px; font-size: 0.85rem; border: 1px dashed var(--gold); color: #d4af37; font-family: 'Courier New', Courier, monospace; }
+        #input-bar { width: 100%; max-width: 800px; padding: 15px; background: #000; display: flex; gap: 10px; margin: 0 auto; border-top: 1px solid #222; }
+        input { flex: 1; background: #1a1a1a; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; outline: none; }
+        .btn-gold { background: var(--gold); border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; color: black; text-transform: uppercase; font-size: 0.7rem; }
+        #sidebar { position: fixed; left: -280px; top: 0; width: 280px; height: 100%; background: #000; border-right: 1px solid var(--gold); transition: 0.3s; z-index: 1000; padding: 20px; }
+        #sidebar.open { left: 0; }
+        .history-item { padding: 10px; border-bottom: 1px solid #222; font-size: 0.8rem; cursor: pointer; color: #888; }
+        .history-item:hover { color: var(--gold); }
     </style>
 </head>
-<body class="flex flex-col h-screen">
+<body>
 
-    <div id="overlay" class="fixed inset-0 bg-slate-900 z-[100] flex flex-col items-center justify-center p-6 text-center">
-        <h2 class="text-white text-2xl font-bold mb-4 uppercase tracking-tighter">JARVIS - VERSIONE 1</h2>
-        <button onclick="startApp()" class="bg-white text-slate-900 px-10 py-4 rounded-full font-bold text-lg shadow-2xl hover:scale-105 transition">ENTRA NELLO STUDIO LEGALE</button>
-    </div>
+<div id="sidebar">
+    <h2 style="color: var(--gold); font-size: 0.8rem; margin-bottom: 20px;">CRONOLOGIA CASI</h2>
+    <div id="history-list"></div>
+    <button class="btn-gold" style="width: 100%; margin-top: 20px;" onclick="location.reload()">Nuova Sessione</button>
+</div>
 
-    <div id="sidebar" class="sidebar closed fixed inset-y-0 left-0 w-64 bg-slate-900 text-white p-4 shadow-2xl">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="font-bold text-xs text-slate-500 uppercase tracking-widest text-white">Storico Casi</h2>
-            <button onclick="toggleSidebar()" class="text-slate-400 text-2xl">✕</button>
-        </div>
-        <div id="historyList" class="space-y-2 overflow-y-auto h-[80%] px-2"></div>
-        <button onclick="location.reload()" class="absolute bottom-4 left-4 right-4 bg-slate-800 p-3 rounded-xl text-xs font-bold hover:bg-slate-700">RESET APP</button>
-    </div>
+<header>
+    <button onclick="document.getElementById('sidebar').classList.toggle('open')" style="color: var(--gold); background: none; border: none; font-size: 1.5rem;">☰</button>
+    <h1>JARVIS: ECCELLENZA DEL FORO MONDIALE</h1>
+    <div style="width: 30px;"></div>
+</header>
 
-    <header class="bg-white border-b border-slate-200 p-4 flex justify-between items-center shadow-sm">
-        <button onclick="toggleSidebar()" class="bg-slate-100 p-2 rounded-lg">📜</button>
-        <h1 class="text-[10px] md:text-sm font-bold text-slate-800 uppercase tracking-tighter">JARVIS - AVVOCATO DI FIDUCIA V1</h1>
-        <div class="w-8"></div>
-    </header>
+<div id="chat-window"></div>
 
-    <main id="chatBox" class="chat-container overflow-y-auto p-4 space-y-4 bg-[#f1f5f9]"></main>
+<div id="input-bar">
+    <button id="mic-btn" class="btn-gold" style="background: #1a1a1a; color: var(--gold);" onclick="toggleMic()">🎤</button>
+    <input type="text" id="userInput" placeholder="Parla o scrivi a Jarvis...">
+    <button class="btn-gold" onclick="handleInput()">Invia</button>
+</div>
 
-    <footer class="bg-white border-t border-slate-200 p-4">
-        <div class="max-w-4xl mx-auto flex gap-2">
-            <input type="text" id="userInput" placeholder="Scrivi il tuo quesito legale..." class="flex-1 p-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-400 text-sm">
-            <button id="micBtn" class="bg-slate-50 p-3 rounded-xl border border-slate-200">🎤</button>
-            <button id="sendBtn" class="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold text-sm">INVIA</button>
-        </div>
-    </footer>
+<script>
+    const HF_TOKEN = "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";
+    const MODEL = "HuggingFaceH4/zephyr-7b-beta";
+    
+    const chatWin = document.getElementById('chat-window');
+    const input = document.getElementById('userInput');
+    let chats = JSON.parse(localStorage.getItem('jarvis_legal_history') || '{}');
 
-    <script>
-        const HF_TOKEN = "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"; 
-        const MODELS = [
-            "HuggingFaceH4/zephyr-7b-beta",
-            "mistralai/Mistral-7B-Instruct-v0.2",
-            "facebook/llama-3-8b-instruct"
-        ];
+    function speak(text) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'it-IT';
+        utterance.rate = 0.9;
+        utterance.pitch = 0.8;
+        window.speechSynthesis.speak(utterance);
+    }
+
+    async function getAIResponse(prompt) {
+        const systemPrompt = "Sei JARVIS, l'avvocato d'eccellenza di Fabio. REGOLE: 1. Prima frase empatica e umana. 2. Poi analisi tecnica rigorosa con citazione testuale di articoli del Codice Civile/Penale. 3. Dividi in 'RIFERIMENTI LEGALI' e 'STRATEGIA'. 4. Se mancano dettagli, fai domande precise.";
         
-        let chats = JSON.parse(localStorage.getItem('jarvis_chats') || '{}');
-        let currentChatId = Date.now();
-
-        function startApp() {
-            document.getElementById('overlay').style.display = 'none';
-            renderHistory();
-            const welcome = "Ciao Fabio, sono il tuo avvocato. Ho accesso istantaneo a tutti i codici e sentenze per assisterti con la massima precisione.";
-            addMessage('Jarvis', welcome);
-            speak(welcome);
-        }
-
-        async function getAIResponse(prompt, modelIndex = 0) {
-            if (modelIndex >= MODELS.length) return "Tutti i server legali sono occupati. Riprova tra 30 secondi.";
-            
-            const system = "Sei l'avvocato di Fabio. 1. Frase iniziale umana ed empatica. 2. Dettaglio tecnico con COPIA/INCOLLA articoli Codice Civile/Penale. 3. Sezioni 'CODICI' e 'ALTRO'. 4. Se mancano info, fai domande. Sii professionale.";
-            
-            try {
-                const response = await fetch(`https://api-inference.huggingface.co/models/${MODELS[modelIndex]}`, {
-                    method: "POST",
-                    headers: { "Authorization": `Bearer ${HF_TOKEN}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({ 
-                        inputs: `<|system|>\n${system}</s>\n<|user|>\n${prompt}</s>\n<|assistant|>`,
-                        parameters: { max_new_tokens: 1200, temperature: 0.5, wait_for_model: true }
-                    })
-                });
-
-                const result = await response.json();
-                
-                // Se il modello è in caricamento, riprova lo stesso modello dopo 5 secondi
-                if (result.error && result.error.includes("currently loading")) {
-                    console.log("Modello in caricamento, attendo...");
-                    await new Promise(r => setTimeout(r, 5000));
-                    return getAIResponse(prompt, modelIndex);
-                }
-
-                let aiText = result[0]?.generated_text?.split('<|assistant|>')[1] || result[0]?.generated_text || "";
-                if (!aiText) throw new Error("Risposta vuota");
-                
-                saveChat(prompt, aiText);
-                return aiText;
-            } catch (e) {
-                console.log(`Errore modello ${modelIndex}, provo il prossimo...`);
-                return getAIResponse(prompt, modelIndex + 1);
-            }
-        }
-
-        function speak(text) {
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'it-IT';
-            window.speechSynthesis.speak(utterance);
-        }
-
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SpeechRecognition) {
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'it-IT';
-            micBtn.onclick = () => { recognition.start(); micBtn.classList.add('bg-red-50'); };
-            recognition.onresult = (e) => {
-                userInput.value = e.results[0][0].transcript;
-                micBtn.classList.remove('bg-red-50');
-                handleSend();
-            };
-        }
-
-        async function handleSend() {
-            const text = userInput.value.trim();
-            if (!text) return;
-            addMessage('Tu', text);
-            userInput.value = '';
-            
-            const loadingDiv = document.createElement('div');
-            loadingDiv.id = "loading";
-            loadingDiv.className = "text-[10px] text-slate-400 italic animate-pulse";
-            loadingDiv.innerText = "Jarvis sta consultando i codici...";
-            document.getElementById('chatBox').appendChild(loadingDiv);
-
-            const resp = await getAIResponse(text);
-            document.getElementById('loading').remove();
-            
-            addMessage('Jarvis', resp);
-            speak(resp.split(/[.!?]/)[0]);
-        }
-
-        sendBtn.onclick = handleSend;
-        userInput.onkeypress = (e) => { if(e.key === 'Enter') handleSend(); };
-
-        function addMessage(sender, text) {
-            const div = document.createElement('div');
-            div.className = `max-w-[90%] p-4 rounded-2xl text-sm shadow-sm ${sender === 'Tu' ? 'bg-slate-900 text-white ml-auto' : 'bg-white text-slate-800 border border-slate-200'}`;
-            div.innerHTML = `<p class="font-bold mb-1 text-[9px] uppercase opacity-40">${sender}</p><div class="leading-relaxed text-[13px]">${text.replace(/\n/g, '<br>')}</div>`;
-            document.getElementById('chatBox').appendChild(div);
-            document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
-        }
-
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('closed'); }
-        
-        function saveChat(u, a) {
-            chats[currentChatId] = { u, a, date: new Date().toLocaleString() };
-            localStorage.setItem('jarvis_chats', JSON.stringify(chats));
-            renderHistory();
-        }
-
-        function renderHistory() {
-            const list = document.getElementById('historyList');
-            list.innerHTML = '';
-            Object.keys(chats).reverse().slice(0, 10).forEach(id => {
-                const btn = document.createElement('button');
-                btn.className = "w-full text-left p-3 hover:bg-slate-800 rounded-xl text-[10px] truncate text-slate-400 border-b border-slate-800/50";
-                btn.innerText = chats[id].u;
-                btn.onclick = () => { 
-                    document.getElementById('chatBox').innerHTML = '';
-                    addMessage('Tu', chats[id].u); 
-                    addMessage('Jarvis', chats[id].a); 
-                    toggleSidebar(); 
-                };
-                list.appendChild(btn);
+        try {
+            const response = await fetch(`https://api-inference.huggingface.co/models/${MODEL}`, {
+                method: "POST",
+                headers: { "Authorization": `Bearer ${HF_TOKEN}`, "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    inputs: `<|system|>\n${systemPrompt}</s>\n<|user|>\n${prompt}</s>\n<|assistant|>`,
+                    parameters: { max_new_tokens: 1000, wait_for_model: true }
+                })
             });
+            const data = await response.json();
+            return data[0].generated_text.split('<|assistant|>')[1] || "Analisi completata. Riprova tra un istante.";
+        } catch (e) {
+            return "Il server legale è momentaneamente occupato. Sto ricollegando i database...";
         }
-    </script>
+    }
+
+    function appendMsg(role, text) {
+        const div = document.createElement('div');
+        div.className = `msg ${role.toLowerCase()}`;
+        
+        // Separiamo la parte tecnica se esiste nel testo dell'AI
+        let mainText = text;
+        let technical = "";
+        if (text.includes("RIFERIMENTI LEGALI")) {
+            const parts = text.split("RIFERIMENTI LEGALI");
+            mainText = parts[0];
+            technical = parts[1];
+        }
+
+        div.innerHTML = `<strong>${role.toUpperCase()}</strong><br>${mainText}`;
+        if (technical) {
+            div.innerHTML += `<div class="technical-part"><span style="font-weight:bold; display:block; margin-bottom:5px;">[ ANALISI TECNICA ]</span>${technical}</div>`;
+        }
+
+        chatWin.appendChild(div);
+        chatWin.scrollTop = chatWin.scrollHeight;
+    }
+
+    async function handleInput() {
+        const val = input.value.trim();
+        if (!val) return;
+        appendMsg("Fabio", val);
+        input.value = "";
+
+        const aiRes = await getAIResponse(val);
+        appendMsg("Jarvis", aiRes);
+        speak(aiRes.split('.')[0]); // Parla solo la parte iniziale per brevità
+
+        // Salva in cronologia
+        const id = Date.now();
+        chats[id] = { q: val, a: aiRes };
+        localStorage.setItem('jarvis_legal_history', JSON.stringify(chats));
+        renderHistory();
+    }
+
+    // Gestione Microfono
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'it-IT';
+        recognition.onresult = (e) => { input.value = e.results[0][0].transcript; handleInput(); };
+        window.toggleMic = () => recognition.start();
+    }
+
+    function renderHistory() {
+        const list = document.getElementById('history-list');
+        list.innerHTML = '';
+        Object.keys(chats).reverse().forEach(id => {
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            item.innerText = chats[id].q.substring(0, 30) + "...";
+            item.onclick = () => {
+                chatWin.innerHTML = '';
+                appendMsg("Fabio", chats[id].q);
+                appendMsg("Jarvis", chats[id].a);
+                document.getElementById('sidebar').classList.remove('open');
+            };
+            list.appendChild(item);
+        });
+    }
+
+    window.onload = () => {
+        renderHistory();
+        const saluto = "Buongiorno Fabio. Il tuo studio legale digitale è operativo. Sono pronto ad analizzare ogni tuo caso con precisione chirurgica.";
+        appendMsg("Jarvis", saluto);
+        speak(saluto);
+    };
+
+    input.addEventListener("keypress", (e) => { if (e.key === "Enter") handleInput(); });
+</script>
 </body>
 </html>
